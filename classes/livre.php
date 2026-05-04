@@ -3,57 +3,43 @@ class Livre {
     private $conn;
     private $table = "livres";
 
-    public $id, $titre, $isbn, $annee, $quantite, $auteur_id, $categorie_id;
-    public $auteur_nom, $categorie_libelle;
-
     public function __construct($db) {
         $this->conn = $db;
     }
 
-    public function lireTous() {
-        $query = "SELECT l.id, l.titre, l.isbn, l.annee, l.quantite, 
-                         a.nom as auteur_nom, c.libelle as categorie_libelle
-                  FROM " . $this->table . " l
-                  LEFT JOIN auteurs a ON l.auteur_id = a.id
-                  LEFT JOIN categories c ON l.categorie_id = c.id
-                  ORDER BY l.titre ASC";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        return $stmt;
+    public function getAll() {
+        $sql = "SELECT l.*, a.nom AS auteur, c.libelle AS categorie
+                FROM livres l
+                LEFT JOIN auteurs a ON l.auteur_id = a.id
+                LEFT JOIN categories c ON l.categorie_id = c.id";
+
+        return $this->conn->query($sql);
     }
 
-    public function creer() {
-        $query = "INSERT INTO " . $this->table . " SET titre=:titre, isbn=:isbn, annee=:annee, 
-                  quantite=:quantite, auteur_id=:auteur_id, categorie_id=:categorie_id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":titre", $this->titre);
-        $stmt->bindParam(":isbn", $this->isbn);
-        $stmt->bindParam(":annee", $this->annee);
-        $stmt->bindParam(":quantite", $this->quantite);
-        $stmt->bindParam(":auteur_id", $this->auteur_id);
-        $stmt->bindParam(":categorie_id", $this->categorie_id);
-        return $stmt->execute();
+    public function create($titre, $isbn, $annee, $quantite, $auteur, $categorie) {
+        $stmt = $this->conn->prepare(
+            "INSERT INTO livres (titre,isbn,annee,quantite,auteur_id,categorie_id)
+             VALUES (?,?,?,?,?,?)"
+        );
 
+        return $stmt->execute([$titre,$isbn,$annee,$quantite,$auteur,$categorie]);
     }
-    public function modifier() {
-        $query = "UPDATE " . $this->table . " SET titre=:titre, isbn=:isbn, annee=:annee, 
-                  quantite=:quantite, auteur_id=:auteur_id, categorie_id=:categorie_id WHERE id=:id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":titre", $this->titre);
-        $stmt->bindParam(":isbn", $this->isbn);
-        $stmt->bindParam(":annee", $this->annee);
-        $stmt->bindParam(":quantite", $this->quantite);
-        $stmt->bindParam(":auteur_id", $this->auteur_id);
-        $stmt->bindParam(":categorie_id", $this->categorie_id);
-        $stmt->bindParam(":id", $this->id);
-        return $stmt->execute();
 
+    public function delete($id) {
+        $stmt = $this->conn->prepare("DELETE FROM livres WHERE id=?");
+        return $stmt->execute([$id]);
     }
-    public function supprimer() {
-        $query = "DELETE FROM " . $this->table . " WHERE id = ?";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1, $this->id);
-        return $stmt->execute();
+
+    public function getById($id) {
+        $stmt = $this->conn->prepare("SELECT * FROM livres WHERE id=?");
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-    
+
+    public function update($id,$titre,$isbn,$annee,$quantite) {
+        $stmt = $this->conn->prepare(
+            "UPDATE livres SET titre=?,isbn=?,annee=?,quantite=? WHERE id=?"
+        );
+        return $stmt->execute([$titre,$isbn,$annee,$quantite,$id]);
+    }
 }
