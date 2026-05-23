@@ -10,7 +10,7 @@ Projet de gestion de bibliothèque en PHP 8 + POO + PDO + MySQL.
 ## Installation
 1. Créer une BDD `bibliotheque` dans phpMyAdmin
 2. Modifier `config/Database.php` : host, user, pass
-3. Lancer : http://localhost/PHP2ndsemestre/Bibliotheque/
+3. Lancer : http://localhost/PHP2ndsemestre/Bibliotheque/index.php
 
 ## Arborescence
 - `classes/` : Modèles Livre, Auteur, Categorie
